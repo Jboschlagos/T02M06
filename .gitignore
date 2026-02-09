@@ -1,0 +1,20 @@
+# Dependencias de Node.js - ¡IMPORTANTE!
+node_modules/
+
+# Archivos de logs
+npm-debug.log*
+
+# Archivo de productos (OPCIONAL - decide si quieres ignorarlo)
+# productos.txt
+
+# Configuración del editor
+.vscode/
+.idea/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos temporales
+*.tmp
+*.temp
