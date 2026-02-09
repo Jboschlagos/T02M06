@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Servidor Web Node.js + API REST - Gestión de Productos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Prism para resaltado de código -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <!-- CSS propio -->
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-node shadow">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="bi bi-node-plus me-2 fs-4"></i>
+                <div>
+                    <span class="fw-bold">Gestión de Productos - API REST</span>
+                    <small class="d-block" style="font-size: 0.8rem; opacity: 0.9;">Node.js + Express</small>
+                </div>
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="#cliente-section"><i class="bi bi-play-circle me-1"></i> Cliente</a>
+                <a class="nav-link" href="#codigo-section"><i class="bi bi-code-square me-1"></i> Código</a>
+                <a class="nav-link" href="#evidencias-section"><i class="bi bi-images me-1"></i> Evidencias</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-5">
+        <!-- SECCIÓN DEL CLIENTE FUNCIONAL -->
+        <section id="cliente-section" class="mb-5">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2 class="text-node border-bottom pb-3">
+                        <i class="bi bi-play-circle me-2"></i>Cliente Web Interactivo
+                    </h2>
+                    <p class="lead">Interfaz que consume la API REST para gestionar productos</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Panel de productos -->
+                <div class="col-lg-8 mb-4">
+                    <div class="card border-node shadow h-100">
+                        <div class="card-header bg-node-light d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Lista de Productos</h5>
+                            <span class="badge bg-node">Total: <span id="total-productos">0</span></span>
+                        </div>
+                        <div class="card-body">
+                            <!-- Controles -->
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <button id="btnCargar" class="btn btn-node">
+                                    <i class="bi bi-arrow-clockwise me-1"></i> Cargar Productos
+                                </button>
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-node" id="btnOrdenarNombre">
+                                        <i class="bi bi-sort-alpha-down me-1"></i> Nombre
+                                    </button>
+                                    <button class="btn btn-outline-node" id="btnOrdenarPrecio">
+                                        <i class="bi bi-sort-numeric-down me-1"></i> Precio
+                                    </button>
+                                </div>
+                                <button class="btn btn-outline-secondary" id="btnLimpiar">
+                                    <i class="bi bi-x-circle me-1"></i> Limpiar
+                                </button>
+                            </div>
+
+                            <!-- Tabla de productos -->
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th width="80">ID</th>
+                                            <th>Producto</th>
+                                            <th width="150">Precio (CLP)</th>
+                                            <th width="100">Imagen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody">
+                                        <tr id="loading-row">
+                                            <td colspan="4" class="text-center py-5">
+                                                <div class="spinner-border text-node" role="status">
+                                                    <span class="visually-hidden">Cargando...</span>
+                                                </div>
+                                                <p class="mt-2 text-muted">Cargando productos del servidor...</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="msg" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel para agregar productos -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card border-node shadow h-100">
+                        <div class="card-header bg-node-light">
+                            <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Agregar Nuevo Producto</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="formAgregar">
+                                <div class="mb-3">
+                                    <label for="inpNombre" class="form-label">Nombre del Producto *</label>
+                                    <input type="text" class="form-control" id="inpNombre"
+                                        placeholder="Ej: Audífonos Bluetooth" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="inpPrecio" class="form-label">Precio (CLP) *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="inpPrecio" placeholder="29990"
+                                            min="1" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="inpImagen" class="form-label">URL de Imagen</label>
+                                    <input type="url" class="form-control" id="inpImagen"
+                                        placeholder="https://ejemplo.com/imagen.jpg">
+                                    <div class="form-text">
+                                        URLs de ejemplo:
+                                        <a href="#" class="d-block"
+                                            onclick="document.getElementById('inpImagen').value='https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100'; return false;">
+                                            Audífonos
+                                        </a>
+                                        <a href="#" class="d-block"
+                                            onclick="document.getElementById('inpImagen').value='https://images.unsplash.com/photo-1527814050087-3793815479db?w=100'; return false;">
+                                            Laptop
+                                        </a>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-node w-100">
+                                    <i class="bi bi-plus-lg me-1"></i> Agregar Producto
+                                </button>
+                            </form>
+
+                            <div class="mt-4">
+                                <div class="alert alert-info">
+                                    <h6><i class="bi bi-info-circle me-2"></i>Información del Servidor</h6>
+                                    <p class="mb-1">Estado: <span id="server-status"
+                                            class="badge bg-success">Conectado</span></p>
+                                    <p class="mb-0">Endpoint: <code>http://localhost:3000/api/productos</code></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN DEL CÓDIGO -->
+        <section id="codigo-section" class="mb-5">
+            <h2 class="text-node border-bottom pb-3">
+                <i class="bi bi-code-slash me-2"></i>Código Fuente
+            </h2>
+
+            <!-- Pestañas -->
+            <ul class="nav nav-tabs mb-3" id="codeTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="server-tab" data-bs-toggle="tab" data-bs-target="#server-code"
+                        type="button">server.js</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="cliente-tab" data-bs-toggle="tab" data-bs-target="#cliente-code"
+                        type="button">cliente.js</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="productos-tab" data-bs-toggle="tab" data-bs-target="#productos-code"
+                        type="button">productos.txt</button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- Tab server.js -->
+                <div class="tab-pane fade show active" id="server-code">
+                    <div class="card">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-file-code me-2"></i>server.js - Servidor Node.js con Express</span>
+                            <small>Puerto: 3000</small>
+                        </div>
+                        <div class="card-body p-0">
+                            <pre class="m-0"><code class="language-javascript">
+const express = require('express');
+const fs = require('fs/promises');
+const path = require('path');
+const cors = require('cors');
+
+const app = express();
+const PORT = 3000;
+
+const DATA_FILE = path.join(__dirname, "productos.txt");
+const PUBLIC_DIR = path.join(__dirname, "public");
+
+// Configuración CORS permisiva para desarrollo
+app.use(cors());
+app.use(express.json());
+app.use(express.static(PUBLIC_DIR));
+
+// Función para procesar texto a productos
+function productsFromText(text) {
+    if (!text.trim()) return [];
+    
+    let arrayProductsRaw = text.split("\n");
+    let newArrayProducts = arrayProductsRaw
+        .filter(line => line.trim() !== "")
+        .map((line, index) => {
+            const [nombre, precio] = line.split(",");
+            return {
+                id: index + 1,
+                nombre: nombre.trim(),
+                precio: Number(precio.trim())
+            };
+        });
+    return newArrayProducts;
+}
+
+// Leer productos desde archivo
+async function readProducts() {
+    try {
+        const text = await fs.readFile(DATA_FILE, "utf-8");
+        return productsFromText(text);
+    } catch (err) {
+        if (err.code === "ENOENT") {
+            // Si el archivo no existe, crearlo con datos iniciales
+            const productosIniciales = [
+                "Audífonos Bluetooth, 29990",
+                "Mouse Gamer, 15990",
+                "Teclado Mecánico, 45990"
+            ].join("\n");
+            await fs.writeFile(DATA_FILE, productosIniciales, 'utf-8');
+            return productsFromText(productosIniciales);
+        }
+        throw err;
+    }
+}
+
+// Agregar producto al archivo
+async function appendProduct({ nombre, precio }) {
+    const line = `\n${nombre},${precio}`;
+    await fs.appendFile(DATA_FILE, line, 'utf-8');
+}
+
+// GET /api/productos
+app.get("/api/productos", async (req, res, next) => {
+    try {
+        const productos = await readProducts();
+        res.status(200).json({ ok: true, productos });
+    } catch (err) {
+        next(err);
+    }
+});
+
+// POST /api/productos
+app.post("/api/productos", async (req, res, next) => {
+    try {
+        const nombre = String(req.body?.nombre ?? "").trim();
+        const precio = Number(req.body?.precio);
+
+        if (!nombre) {
+            return res.status(400).json({ ok: false, error: "Falta nombre" });
+        }
+        
+        if (!Number.isFinite(precio) || precio <= 0) {
+            return res.status(400).json({ ok: false, error: "Precio inválido" });
+        }
+
+        await appendProduct({ nombre, precio });
+        const productos = await readProducts();
+
+        res.status(201).json({ 
+            ok: true, 
+            mensaje: "Producto agregado", 
+            productos 
+        });
+    } catch (err) {
+        console.error("Error en POST:", err);
+        next(err);
+    }
+});
+
+// Métodos no permitidos para /api/productos
+app.all("/api/productos", (req, res) => {
+    res.set("Allow", "GET, POST");
+    res.status(405).json({ ok: false, error: "Method not Allowed" });
+});
+
+// 404 para rutas no encontradas
+app.use((req, res) => {
+    res.status(404).json({ ok: false, error: "Not Found" });
+});
+
+// Manejo de errores generales
+app.use((err, req, res, next) => {
+    console.error("Error del servidor:", err);
+    res.status(500).json({ ok: false, error: "Error interno del servidor" });
+});
+
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor Node.js ejecutándose en http://localhost:${PORT}`);
+    console.log(`📡 API REST disponible en http://localhost:${PORT}/api/productos`);
+});
+                            </code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab cliente.js -->
+                <div class="tab-pane fade" id="cliente-code">
+                    <div class="card">
+                        <div class="card-header bg-dark text-white">
+                            <i class="bi bi-file-code me-2"></i>JavaScript del Cliente (cliente.js)
+                        </div>
+                        <div class="card-body p-0">
+                            <pre class="m-0"><code class="language-javascript">
+// Configuración
+const API_URL = "http://localhost:3000/api/productos";
+let productos = [];
+let ordenActual = 'id';
+
+// Elementos DOM
+const tbody = document.querySelector("#tbody");
+const msg = document.querySelector("#msg");
+const totalProductos = document.querySelector("#total-productos");
+
+// Obtener imagen por defecto basada en nombre
+function obtenerImagenPorDefecto(nombre) {
+    const imagenes = {
+        'audífono': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100',
+        'mouse': 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=100',
+        'teclado': 'https://images.unsplash.com/photo-1541140532154-b024d705b90a?w-100',
+        'monitor': 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=100',
+        'laptop': 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=100',
+        'tablet': 'https://images.unsplash.com/photo-1546054450-077cd5e6dac5?w=100',
+        'smartwatch': 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100',
+        'router': 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=100',
+        'impresora': 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=100',
+        'webcam': 'https://images.unsplash.com/photo-1556656793-08538906a9f8?w=100'
+    };
+    
+    const nombreLower = nombre.toLowerCase();
+    for (const [key, url] of Object.entries(imagenes)) {
+        if (nombreLower.includes(key)) {
+            return url;
+        }
+    }
+    return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100';
+}
+
+// Renderizar productos en tabla
+function render(list) {
+    tbody.innerHTML = "";
+    
+    if (list.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center py-4">
+                    <i class="bi bi-inbox fs-1 text-muted"></i>
+                    <p class="mt-2">No hay productos disponibles</p>
+                </td>
+            </tr>
+        `;
+        totalProductos.textContent = "0";
+        return;
+    }
+    
+    list.forEach((prod, index) => {
+        const tr = document.createElement('tr');
+        const imagenURL = prod.imagen || obtenerImagenPorDefecto(prod.nombre);
+        
+        tr.innerHTML = `
+            <td class="fw-bold">${prod.id}</td>
+            <td>
+                <div class="fw-semibold">${prod.nombre}</div>
+                <small class="text-muted">ID: ${prod.id}</small>
+            </td>
+            <td class="fw-bold text-success">$${prod.precio.toLocaleString("es-CL")}</td>
+            <td>
+                <img src="${imagenURL}" alt="${prod.nombre}" 
+                     class="producto-img" 
+                     title="${prod.nombre}"
+                     onerror="this.src='https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100'">
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    
+    totalProductos.textContent = list.length;
+}
+
+// Cargar productos desde la API
+async function cargarProductos() {
+    mostrarMensaje('Cargando productos...', 'info');
+    
+    try {
+        const response = await fetch(API_URL);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.ok) {
+            throw new Error(data.error || "Error en la respuesta");
+        }
+        
+        productos = data.productos;
+        render(productos);
+        mostrarMensaje(`✅ ${productos.length} productos cargados`, 'success');
+        
+        // Actualizar estado del servidor
+        document.querySelector('#server-status').className = 'badge bg-success';
+        document.querySelector('#server-status').textContent = 'Conectado';
+        
+    } catch (err) {
+        console.error("Error:", err);
+        productos = [];
+        render([]);
+        mostrarMensaje(`❌ Error: ${err.message}`, 'danger');
+        
+        // Actualizar estado del servidor
+        document.querySelector('#server-status').className = 'badge bg-danger';
+        document.querySelector('#server-status').textContent = 'Desconectado';
+    }
+}
+
+// Agregar nuevo producto
+async function agregarProducto(event) {
+    event.preventDefault();
+    
+    const nombre = document.querySelector('#inpNombre').value.trim();
+    const precio = Number(document.querySelector('#inpPrecio').value);
+    const imagen = document.querySelector('#inpImagen').value.trim();
+    
+    // Validaciones
+    if (!nombre) {
+        mostrarMensaje('❌ Por favor, escribe un nombre válido', 'warning');
+        return;
+    }
+    
+    if (!Number.isFinite(precio) || precio <= 0) {
+        mostrarMensaje('❌ El precio debe ser un número mayor a 0', 'warning');
+        return;
+    }
+    
+    mostrarMensaje('Enviando producto al servidor...', 'info');
+    
+    try {
+        const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nombre, precio })
+        });
+        
+        const data = await res.json();
+        
+        if (!data.ok || !res.ok) {
+            throw new Error(data.error || "Error al agregar producto");
+        }
+        
+        // Actualizar lista
+        productos = data.productos;
+        render(productos);
+        
+        // Limpiar formulario
+        document.querySelector('#inpNombre').value = "";
+        document.querySelector('#inpPrecio').value = "";
+        document.querySelector('#inpImagen').value = "";
+        
+        mostrarMensaje(`✅ Producto "${nombre}" agregado correctamente`, 'success');
+        
+    } catch (err) {
+        console.error("Error:", err);
+        mostrarMensaje(`❌ Error: ${err.message}`, 'danger');
+    }
+}
+
+// Ordenar productos
+function ordenarPorNombre() {
+    ordenActual = 'nombre';
+    productos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    render(productos);
+    mostrarMensaje('Productos ordenados por nombre', 'info');
+}
+
+function ordenarPorPrecio() {
+    ordenActual = 'precio';
+    productos.sort((a, b) => a.precio - b.precio);
+    render(productos);
+    mostrarMensaje('Productos ordenados por precio', 'info');
+}
+
+// Mostrar mensajes
+function mostrarMensaje(texto, tipo = 'info') {
+    msg.textContent = texto;
+    msg.className = `alert alert-${tipo} py-2`;
+    msg.style.display = 'block';
+    
+    // Auto-ocultar después de 5 segundos
+    setTimeout(() => {
+        if (msg.textContent === texto) {
+            msg.style.display = 'none';
+        }
+    }, 5000);
+}
+
+// Limpiar lista
+function limpiarLista() {
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="4" class="text-center py-4">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <p class="mt-2">Lista limpiada. Haz clic en "Cargar Productos"</p>
+            </td>
+        </tr>
+    `;
+    totalProductos.textContent = "0";
+    mostrarMensaje('Lista limpiada', 'info');
+}
+
+// Event Listeners
+document.getElementById('btnCargar').addEventListener('click', cargarProductos);
+document.getElementById('btnOrdenarNombre').addEventListener('click', ordenarPorNombre);
+document.getElementById('btnOrdenarPrecio').addEventListener('click', ordenarPorPrecio);
+document.getElementById('btnLimpiar').addEventListener('click', limpiarLista);
+document.getElementById('formAgregar').addEventListener('submit', agregarProducto);
+
+// Cargar productos al iniciar
+window.addEventListener('DOMContentLoaded', () => {
+    cargarProductos();
+});
+                            </code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab productos.txt -->
+                <div class="tab-pane fade" id="productos-code">
+                    <div class="card">
+                        <div class="card-header bg-dark text-white">
+                            <i class="bi bi-file-text me-2"></i>productos.txt - Base de datos de productos
+                        </div>
+                        <div class="card-body p-0">
+                            <pre class="m-0"><code class="language-txt">
+Audífonos Bluetooth, 29990
+Mouse Gamer, 15990
+Teclado Mecánico, 45990
+Monitor 24", 189990
+Webcam Full HD, 34990
+Laptop Gaming, 899990
+Tablet 10", 249990
+Smartwatch, 79990
+Router WiFi 6, 69990
+Impresora Multifuncional, 129990
+                            </code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN DE EVIDENCIAS -->
+        <section id="evidencias-section" class="mb-5">
+            <section class="mb-5">
+                <h3 class="border-bottom pb-2 text-primary">
+                    <i class="bi bi-check-circle me-2"></i>Instalación y Configuración del Servidor
+                </h3>
+
+                <p>
+                    Se instalaron las dependencias necesarias (<code>express</code> y <code>cors</code>)
+                    y se configuró el servidor Node.js en el puerto 3000.
+                </p>
+
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <img src="./img/instalacionExpress.png" class="img-fluid rounded shadow"
+                            alt="Instalación de Express y configuración inicial">
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-5">
+                <h3 class="border-bottom pb-2 text-primary">
+                    <i class="bi bi-arrow-down-circle me-2"></i>Endpoint GET /api/productos
+                </h3>
+
+                <p>
+                    Se realiza una petición <strong>GET</strong> al endpoint <code>/api/productos</code>,
+                    el cual responde con la lista completa de productos en formato JSON, obtenida del archivo
+                    <code>productos.txt</code> de forma no bloqueante.
+                </p>
+
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <img src="/public/img/metodoGet.png" class="img-fluid rounded shadow"
+                            alt="GET /api/productos - Lista de productos en JSON">
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-5">
+                <h3 class="border-bottom pb-2 text-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Endpoint POST /api/productos
+                </h3>
+
+                <p>
+                    Se realiza una petición <strong>POST</strong> al endpoint <code>/api/productos</code>,
+                    el cual recibe un producto en formato JSON y lo agrega al archivo <code>productos.txt</code>.
+                    Responde con código 201 (Created) cuando el producto es agregado exitosamente.
+                </p>
+
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <img src="./img/metodoPost.png" class="img-fluid rounded shadow"
+                            alt="POST /api/productos - Agregar nuevo producto">
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-5">
+                <h3 class="border-bottom pb-2 text-primary">
+                    <i class="bi bi-x-circle me-2"></i>Métodos HTTP no permitidos
+                </h3>
+
+                <p>
+                    Se prueba una petición con método <strong>PUT</strong> al endpoint <code>/api/productos</code>,
+                    el cual es rechazado con código de estado <code>405 Method Not Allowed</code>,
+                    ya que solo se permiten GET y POST.
+                </p>
+
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <img src="./img/metodoPut.png" class="img-fluid rounded shadow"
+                            alt="405 Method Not Allowed - Método PUT rechazado">
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-5">
+                <h3 class="border-bottom pb-2 text-primary">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Validación de datos - Error 400
+                </h3>
+
+                <p>
+                    Se prueba una petición POST con datos inválidos (nombre vacío),
+                    el servidor responde con código <code>400 Bad Request</code>
+                    y un mensaje de error descriptivo.
+                </p>
+
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <img src="/public/img/metodopostConError.png" class="img-fluid rounded shadow"
+                            alt="400 Bad Request - Validación de datos fallida">
+                    </div>
+                </div>
+            </section>
+         
+        </section>
+
+        <!-- Console output -->
+        <div class="card mt-4 border-node">
+            <div class="card-header bg-node-light">
+                <h6 class="mb-0"><i class="bi bi-terminal me-2"></i>Consola del Servidor</h6>
+            </div>
+            <div class="card-body">
+                <pre class="bg-dark text-light p-3 rounded" style="max-height: 200px; overflow-y: auto;">
+<span class="text-success">$ node server.js</span>
+🚀 Servidor Node.js ejecutándose en http://localhost:3000
+📡 API REST disponible en http://localhost:3000/api/productos
+<span class="text-info">[GET] /api/productos - 200 OK</span>
+<span class="text-info">[POST] /api/productos - 201 Created</span>
+<span class="text-danger">[PUT] /api/productos - 405 Method Not Allowed</span>
+                </pre>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <h5><i class="bi bi-person-circle me-2"></i>Información del Estudiante</h5>
+                    <p class="mb-1"><strong>Jorge Bosch</strong></p>
+                    <p class="mb-1">Curso Full Stack JavaScript</p>
+                    <p class="mb-0">Actividad: Servidor Web Node.js + API REST</p>
+                </div>
+                <div class="col-md-6 text-md-end mb-3">
+                    <h5><i class="bi bi-check-circle me-2"></i>Requisitos Cumplidos</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check text-success me-1"></i> Servidor Node.js con Express</li>
+                        <li><i class="bi bi-check text-success me-1"></i> API REST (GET/POST)</li>
+                        <li><i class="bi bi-check text-success me-1"></i> Cliente web interactivo</li>
+                        <li><i class="bi bi-check text-success me-1"></i> Ordenamiento por nombre/precio</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="border-light my-3">
+            <p class="text-center mb-0">
+                <i class="bi bi-github me-1"></i> Módulo 6 - Desarrollo de Aplicaciones Web con Node.js y Express
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+
+    <!-- JavaScript del cliente -->
+    <script>
+        // Configuración
+        const API_URL = "http://localhost:3000/api/productos";
+        let productos = [];
+        let ordenActual = 'id';
+
+        // Elementos DOM
+        const tbody = document.querySelector("#tbody");
+        const msg = document.querySelector("#msg");
+        const totalProductos = document.querySelector("#total-productos");
+
+        // Obtener imagen por defecto
+        function obtenerImagenPorDefecto(nombre) {
+            const imagenes = {
+                'audífono': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100',
+                'mouse': 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=100',
+                'teclado': 'https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=100',
+                'monitor': 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=100',
+                'laptop': 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=100',
+                'tablet': 'https://images.unsplash.com/photo-1546054450-077cd5e6dac5?w=100',
+                'smartwatch': 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100',
+                'router': 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=100',
+                'impresora': 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=100',
+                'webcam': 'https://images.unsplash.com/photo-1556656793-08538906a9f8?w=100'
+            };
+
+            const nombreLower = nombre.toLowerCase();
+            for (const [key, url] of Object.entries(imagenes)) {
+                if (nombreLower.includes(key)) {
+                    return url;
+                }
+            }
+            return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100';
+        }
+
+        // Renderizar productos
+        function render(list) {
+            tbody.innerHTML = "";
+
+            if (list.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-4">
+                            <i class="bi bi-inbox fs-1 text-muted"></i>
+                            <p class="mt-2">No hay productos disponibles</p>
+                        </td>
+                    </tr>
+                `;
+                totalProductos.textContent = "0";
+                return;
+            }
+
+            list.forEach((prod) => {
+                const tr = document.createElement('tr');
+                const imagenURL = obtenerImagenPorDefecto(prod.nombre);
+
+                tr.innerHTML = `
+                    <td class="fw-bold">${prod.id}</td>
+                    <td>
+                        <div class="fw-semibold">${prod.nombre}</div>
+                        <small class="text-muted">ID: ${prod.id}</small>
+                    </td>
+                    <td class="fw-bold text-success">$${prod.precio.toLocaleString("es-CL")}</td>
+                    <td>
+                        <img src="${imagenURL}" alt="${prod.nombre}" 
+                             class="producto-img" 
+                             title="${prod.nombre}"
+                             onerror="this.src='https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100'">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            totalProductos.textContent = list.length;
+        }
+
+        // Cargar productos
+        async function cargarProductos() {
+            mostrarMensaje('Cargando productos...', 'info');
+
+            try {
+                const response = await fetch(API_URL);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!data.ok) {
+                    throw new Error(data.error || "Error en la respuesta");
+                }
+
+                productos = data.productos;
+                render(productos);
+                mostrarMensaje(`✅ ${productos.length} productos cargados`, 'success');
+
+                document.querySelector('#server-status').className = 'badge bg-success';
+                document.querySelector('#server-status').textContent = 'Conectado';
+
+            } catch (err) {
+                console.error("Error:", err);
+                productos = [];
+                render([]);
+                mostrarMensaje(`❌ Error: ${err.message}`, 'danger');
+
+                document.querySelector('#server-status').className = 'badge bg-danger';
+                document.querySelector('#server-status').textContent = 'Desconectado';
+            }
+        }
+
+        // Agregar producto
+        async function agregarProducto(event) {
+            event.preventDefault();
+
+            const nombre = document.querySelector('#inpNombre').value.trim();
+            const precio = Number(document.querySelector('#inpPrecio').value);
+
+            if (!nombre) {
+                mostrarMensaje('❌ Por favor, escribe un nombre válido', 'warning');
+                return;
+            }
+
+            if (!Number.isFinite(precio) || precio <= 0) {
+                mostrarMensaje('❌ El precio debe ser un número mayor a 0', 'warning');
+                return;
+            }
+
+            mostrarMensaje('Enviando producto al servidor...', 'info');
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ nombre, precio })
+                });
+
+                const data = await res.json();
+
+                if (!data.ok || !res.ok) {
+                    throw new Error(data.error || "Error al agregar producto");
+                }
+
+                productos = data.productos;
+                render(productos);
+
+                document.querySelector('#inpNombre').value = "";
+                document.querySelector('#inpPrecio').value = "";
+                document.querySelector('#inpImagen').value = "";
+
+                mostrarMensaje(`✅ Producto "${nombre}" agregado correctamente`, 'success');
+
+            } catch (err) {
+                console.error("Error:", err);
+                mostrarMensaje(`❌ Error: ${err.message}`, 'danger');
+            }
+        }
+
+        // Ordenar productos
+        function ordenarPorNombre() {
+            ordenActual = 'nombre';
+            productos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+            render(productos);
+            mostrarMensaje('Productos ordenados por nombre', 'info');
+        }
+
+        function ordenarPorPrecio() {
+            ordenActual = 'precio';
+            productos.sort((a, b) => a.precio - b.precio);
+            render(productos);
+            mostrarMensaje('Productos ordenados por precio', 'info');
+        }
+
+        // Mostrar mensajes
+        function mostrarMensaje(texto, tipo = 'info') {
+            msg.textContent = texto;
+            msg.className = `alert alert-${tipo} py-2`;
+            msg.style.display = 'block';
+
+            setTimeout(() => {
+                if (msg.textContent === texto) {
+                    msg.style.display = 'none';
+                }
+            }, 5000);
+        }
+
+        // Limpiar lista
+        function limpiarLista() {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center py-4">
+                        <i class="bi bi-inbox fs-1 text-muted"></i>
+                        <p class="mt-2">Lista limpiada. Haz clic en "Cargar Productos"</p>
+                    </td>
+                </tr>
+            `;
+            totalProductos.textContent = "0";
+            mostrarMensaje('Lista limpiada', 'info');
+        }
+
+        // Funciones para pruebas
+        function probarEndpoint(metodo) {
+            mostrarMensaje(`Probando ${metodo} ${API_URL}...`, 'info');
+
+            if (metodo === 'GET') {
+                cargarProductos();
+            } else if (metodo === 'POST') {
+                document.querySelector('#inpNombre').value = 'Producto de Prueba';
+                document.querySelector('#inpPrecio').value = '9990';
+                setTimeout(() => {
+                    mostrarMensaje('Rellena el formulario y haz clic en "Agregar Producto"', 'info');
+                }, 1000);
+            } else {
+                fetch(API_URL, { method: metodo })
+                    .then(res => mostrarMensaje(`Respuesta ${metodo}: ${res.status} ${res.statusText}`, 'warning'))
+                    .catch(err => mostrarMensaje(`Error ${metodo}: ${err.message}`, 'danger'));
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('btnCargar').addEventListener('click', cargarProductos);
+        document.getElementById('btnOrdenarNombre').addEventListener('click', ordenarPorNombre);
+        document.getElementById('btnOrdenarPrecio').addEventListener('click', ordenarPorPrecio);
+        document.getElementById('btnLimpiar').addEventListener('click', limpiarLista);
+        document.getElementById('formAgregar').addEventListener('submit', agregarProducto);
+
+        // Inicializar
+        window.addEventListener('DOMContentLoaded', () => {
+            cargarProductos();
+            Prism.highlightAll();
+        });
+    </script>
+</body>
+
+</html>

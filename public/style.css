@@ -1,0 +1,306 @@
+/* ---------------------------
+   Variables CSS para colores Node.js
+--------------------------- */
+:root {
+    --node-green: #339933;
+    --node-green-light: #68a063;
+    --node-dark: #333333;
+}
+
+/* ---------------------------
+   Estilos generales
+--------------------------- */
+body {
+    background-color: #ffffff;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #212529;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3, h4, h5 {
+    color: var(--node-green);
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.8rem;
+}
+
+.lead {
+    font-size: 1.25rem;
+    font-weight: 300;
+}
+
+/* ---------------------------
+   Navbar - Node.js colors
+--------------------------- */
+.navbar-node {
+    background: linear-gradient(135deg, var(--node-dark) 0%, var(--node-green) 100%) !important;
+    box-shadow: 0 4px 12px rgba(51, 153, 51, 0.3);
+}
+
+.navbar-brand {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    transition: color 0.2s;
+}
+
+.navbar-nav .nav-link:hover {
+    color: white !important;
+}
+
+/* ---------------------------
+   Botones personalizados
+--------------------------- */
+.btn-node {
+    background-color: var(--node-green);
+    border-color: var(--node-green);
+    color: white;
+}
+
+.btn-node:hover {
+    background-color: var(--node-green-light);
+    border-color: var(--node-green-light);
+    color: white;
+}
+
+.btn-outline-node {
+    color: var(--node-green);
+    border-color: var(--node-green);
+}
+
+.btn-outline-node:hover {
+    background-color: var(--node-green);
+    color: white;
+    border-color: var(--node-green);
+}
+
+/* ---------------------------
+   Bordes y fondos personalizados
+--------------------------- */
+.border-node {
+    border-color: var(--node-green) !important;
+}
+
+.text-node {
+    color: var(--node-green) !important;
+}
+
+.bg-node-light {
+    background-color: rgba(51, 153, 51, 0.1);
+}
+
+.bg-node {
+    background-color: var(--node-green) !important;
+}
+
+/* ---------------------------
+   Tablas y elementos de datos
+--------------------------- */
+.table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(51, 153, 51, 0.05);
+}
+
+.producto-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    transition: transform 0.2s;
+}
+
+.producto-img:hover {
+    transform: scale(1.05);
+}
+
+/* ---------------------------
+   Tarjetas y secciones
+--------------------------- */
+.card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+/* ---------------------------
+   Formularios
+--------------------------- */
+.form-control:focus {
+    border-color: var(--node-green);
+    box-shadow: 0 0 0 0.25rem rgba(51, 153, 51, 0.25);
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    color: #495057;
+}
+
+/* ---------------------------
+   Alertas y mensajes
+--------------------------- */
+.alert {
+    border-radius: 8px;
+    border: 1px solid transparent;
+}
+
+.alert-info {
+    background-color: rgba(13, 110, 253, 0.1);
+    border-color: rgba(13, 110, 253, 0.2);
+    color: #084298;
+}
+
+/* ---------------------------
+   Bloques de código con Prism
+--------------------------- */
+pre[class*="language-"] {
+    border-left: 4px solid var(--node-green);
+    max-height: 400px;
+    background: #f8fafc !important;
+    border-radius: 8px;
+    padding: 20px !important;
+    box-shadow: inset 0 0 10px rgba(51, 153, 51, 0.1);
+}
+
+.token.keyword {
+    color: var(--node-green) !important;
+    font-weight: bold;
+}
+
+.token.function {
+    color: var(--node-green-light) !important;
+}
+
+.token.string {
+    color: #198754 !important;
+}
+
+.token.comment {
+    color: #6c757d !important;
+}
+
+/* ---------------------------
+   Imágenes de evidencias
+--------------------------- */
+.evidencia-img {
+    max-height: 200px;
+    object-fit: contain;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+/* ---------------------------
+   Animaciones
+--------------------------- */
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
+
+.pulsing {
+    animation: pulse 1.5s infinite;
+}
+
+/* ---------------------------
+   Footer
+--------------------------- */
+footer {
+    background: linear-gradient(135deg, #212529 0%, #343a40 100%);
+    color: #f8f9fa;
+    padding: 40px 0 20px;
+    margin-top: 5rem;
+}
+
+footer h5 {
+    color: #ffffff;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+footer hr.border-light {
+    opacity: 0.2;
+}
+
+footer ul.list-unstyled li {
+    margin-bottom: 0.5rem;
+}
+
+/* ---------------------------
+   Responsive
+--------------------------- */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.7rem;
+    }
+    
+    h3 {
+        font-size: 1.3rem;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    pre[class*="language-"] {
+        padding: 15px !important;
+    }
+    
+    .producto-img {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .d-flex.flex-wrap {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-group {
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        width: 50%;
+    }
+}
